@@ -1,5 +1,7 @@
 package com.meritamerica.assignment3;
 
+import java.text.ParseException;
+
 import com.meritamerica.assignment3.CDAccount;
 import com.meritamerica.assignment3.CDOffering;
 import com.meritamerica.assignment3.CheckingAccount;
@@ -293,5 +295,15 @@ public class AccountHolder {
 			System.out.println(savingsAccounts[i].getBalance());
 		}
 	}
+
+	public static AccountHolder readFromString(String accountData) throws ParseException {
 		
+	}
+		
+	public String writeToString() {
+		String AccHolder = "";
+		AccHolder += this.lastName + "," + this.middleName + ",";
+		AccHolder += this.firstName + "," + this.ssn;
+		return AccHolder;
+}
 }

@@ -1,5 +1,6 @@
 package com.meritamerica.assignment3;
 
+import java.text.ParseException;
 import java.util.Date;
 
 import com.meritamerica.assignment3.BankAccount;
@@ -20,9 +21,19 @@ public class CDAccount extends BankAccount {
 		this.interestRate = offering.getInterestRate();
 	}
 	
+	public CDAccount(double balance, double interestRate, Date date, long accountNumber, int newTerm) {
+		super(balance, interestRate, date, accountNumber);
+		this.term = term;
+	}
+
 	// Create appropriate constructors
 	
-	CDAccount() {
+	//CDAccount() {
+		
+	//}
+
+	
+	static CDAccount readFromString(String accountData) throws ParseException {
 		
 	}
 	

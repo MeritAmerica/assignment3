@@ -1,6 +1,7 @@
 package com.meritamerica.assignment3;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.text.ParseException;
 
 public class CheckingAccount extends BankAccount {
@@ -17,13 +18,10 @@ public class CheckingAccount extends BankAccount {
 		
 	}
 
+	}
+
 	static CheckingAccount readFromString(String accountData) throws ParseException {
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(""));
-			//format.parse();
-		} catch (NumberFormatException nfe) {
-			throw new NumberFormatException("String was not parsed correctly.");
-		}
+		return new CheckingAccount( BankAccount.readFromString(accountData));
 	}
 	
 	public double getBalance() {

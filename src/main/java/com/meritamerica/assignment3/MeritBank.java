@@ -1,7 +1,12 @@
 package com.meritamerica.assignment3;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.Arrays;
+import java.util.Collections;
+
 public class MeritBank {
-	public static int size = 5, numberOfAccountHolders = 0, numberOfCDOfferings = 0;
+	public static int size = 100, numberOfAccountHolders = 0, numberOfCDOfferings = 0;
 	public static long[] accountNumbers = new long[size];
 	public static AccountHolder[] accountHolders = new AccountHolder[size];
 	public static CDOffering[] CDOfferings = new CDOffering[size];
@@ -86,5 +91,66 @@ public class MeritBank {
 		return "AccountHolders: " + accountHolders + 
 				"CDOfferings: " + CDOfferings;
 	}
+
+
+/****************************************BufferedReader***************************************************************/
 	
+	static boolean readFromFile(String fileName) {
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(fileName))){
+			
+			String line = "";
+			int allAccountHolders;
+			int allCheckingsAcc;
+			int allSavingsAcc;
+			int allCDAcc;
+			int allCDOfferings;
+
+			
+			while((line = br.readLine()) != null) {
+				for(int i = 0; i < allAccountHolders; i++ ) {
+					AccountHolder account = AccountHolder.readFromString(line);
+					addAccountHolder(account);
+				
+				for(int j =0; j < allCheckingsAcc; j++) {
+					CheckingAccount ChAccount = CheckingAccount.readFromString(line);
+					account.addCheckingAccount(ChAccount);
+				}
+				for(int k =0; k < allSavingsAcc; k++) {
+					SavingsAccount SvAccount = SavingsAccount.readFromString(line);
+					account.addSavingsAccount(SvAccount);
+				}
+				for(int h =0; h < allCDAcc; h++) {
+					CDAccount CDAcc = CDAccount.readFromString(line);
+					account.addCDAccount(CDAcc);
+				}
+				}
+				
+				CDOfferings = new CDOffering[allCDOfferings];
+				for (int i = 0; i < allCDOfferings; i++) {
+					CDOfferings[i] = CDOffering.readFromString(line);
+					
+				}
+			}
+			br.close();
+			return true;
+			
+		} catch (Exception e) {
+			System.out.print("Something went wrong.");
+			return false;
+		}
+		
+	}
+
+	static boolean writeToFile(String fileName) {
+		return false;
+		
+	}
+	static AccountHolder[] sortAccountHolders() {
+		Arrays.sort(accountHolders);
+			return accountHolders;
+	}
+	static void setNextAccountNumber(long nextAccountNumber) {
+		nextAccountNumber = accountNumbers;
+	}
 }
