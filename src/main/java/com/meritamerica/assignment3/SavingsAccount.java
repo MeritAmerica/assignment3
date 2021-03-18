@@ -1,80 +1,72 @@
 package com.meritamerica.assignment3;
 
-import java.text.DecimalFormat;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class SavingsAccount {
-
-	private	double balance;
-	private double savInt = 0.01;
+public class SavingsAccount extends BankAccount{
 	
-	public SavingsAccount(double openingBalance) {
-		this.balance = openingBalance;
+	private double interestRate = 0.01; // Interest rate
+
+	//Sets opening balance
+	SavingsAccount(double openingBalance){
+		super.balance = openingBalance;
 	}
-	
-	public double getBalance() {
-		return balance;
+
+	SavingsAccount(long accNum, double balance, double interestRate, Date openDate){
+		super.balance = balance;
+		this.interestRate = interestRate;
+		super.openDate = openDate;
+		super.accountNumber = accNum;
 	}
 
 	public double getInterestRate() {
-		return savInt;
+		return interestRate;
+	}
+		
+	public static SavingsAccount readFromString(String accountData) throws ParseException{
+
+		try {
+		int firstCh = 0;
+		int lastCh = accountData.indexOf(",");
+		long accNum = Integer.parseInt(accountData.substring(firstCh, lastCh));
+		
+		firstCh = lastCh+1;
+		lastCh = accountData.indexOf(",", firstCh);
+		double balance = Double.parseDouble(accountData.substring(firstCh, lastCh));
+		
+		firstCh = lastCh+1;
+		lastCh = accountData.indexOf(",", firstCh);
+		double iRate = Double.parseDouble(accountData.substring(firstCh, lastCh));
+		
+		firstCh = lastCh+1;
+		DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+		Date openDate = df.parse(accountData.substring(firstCh));
+		
+		SavingsAccount savingsAccount = new SavingsAccount(accNum, balance, iRate, openDate);
+		
+		return savingsAccount;
+	}catch(Exception e){
+		throw new NumberFormatException();
+	}
+		
 	}
 	
-	/* 
-	 * Checks withdrawal amount: 
-	 * If the requested amount is greater than the balance,
-	 * no calculation is performed and returns false. 
-	 */
-	public boolean withdraw(double amount) {
-		
-		if(amount < balance) {
-			this.balance -= amount;
-			return true;
-		} 
-		return false;
-	}
-
-	/* 
-	 * Checks deposit amount: 
-	 * If the deposit amount is a negative number,
-	 * no calculation is performed and returns false. 
-	 */
-	public boolean deposit(double amount) {
-		
-		if(amount > 0) {
-			this.balance += amount;
-			return true;
-		} 
-		return false;
-	}
-	
-	/*
-	 * Calculation: Future Value based on current balance and interest.
-	 */
-	public double futureValue(int years) {
-		double fv = getBalance() * Math.pow(1 + savInt, years);
-		return fv;
-	}
-
-	/*
-	 * DecimalFormat() 
-	 * Converts and formats double/floating/exponential notation to decimal format.
-	 * toString(): Concatenates requested data for final println in main().
-	 */
+//	// Outputs account info
 	public String toString() {
-
-		DecimalFormat dfInt = new DecimalFormat("0.###");
-		DecimalFormat dfFutVal = new DecimalFormat("0.00");
-		
-		String concat1 = "Savings Account Balance: " + "$"+ getBalance() + "\n";
-		String concat2 = "Savings Account Interest Rate: " + dfInt.format(getInterestRate()) + "\n"; 
-		String concat3 = "Savings Account Balance in 3 years: " + dfFutVal.format(futureValue(3)) + "\n";
-		String concatSav = concat1 + concat2 + concat3;
-
-		return concatSav;
+		DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+		String saveAccInfo = getAccountNumber() + "," + getBalance() + "," + getInterestRate() + "," + df.format(getOpenedOn());
+		return saveAccInfo;
 	}
+	
+	
 }
 
-// End SavingsAccount.java
+
+
+
+
 
 
 

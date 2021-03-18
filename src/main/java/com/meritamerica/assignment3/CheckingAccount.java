@@ -1,79 +1,78 @@
 package com.meritamerica.assignment3;
 
-import java.text.DecimalFormat;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class CheckingAccount {
-
-	private	double balance;
-	private double ckInt = 0.000;
+public class CheckingAccount extends BankAccount{
 	
-	public CheckingAccount(double openingBalance) {
-		this.balance = openingBalance;
+	private double interestRate = 0.0001;
+	
+	//Sets opening balance
+	public CheckingAccount(double openingBalance){
+		super.balance = openingBalance;
 	}
 	
-	public double getBalance() {
-		return balance;
+	CheckingAccount(long accNum, double balance, double interestRate, Date openDate){
+		super.balance = balance;
+		this.interestRate = interestRate;
+		super.openDate = openDate;
+		super.accountNumber = accNum;
 	}
 
 	public double getInterestRate() {
-		return ckInt;
+		return interestRate;
 	}
 	
-	/* 
-	 * Checks withdrawal amount: 
-	 * If the requested amount is greater than the balance,
-	 * no calculation is performed and returns false. 
-	 */
-	public boolean withdraw(double amount) {
-
-		if(amount < balance) {
-			this.balance -= amount;
-			return true;
-		} 
-		return false;
+	public static CheckingAccount readFromString(String accountData) throws ParseException{
+		int firstChkAcct = 0;
+		int lastChkAcct = accountData.indexOf(",");
+		long accNum = Integer.parseInt(accountData.substring(firstChkAcct, lastChkAcct));
+		
+		try {
+//			int firstCh = 0;
+//			int lastCh = accountData.indexOf(",");
+//			long accNum = Integer.parseInt(accountData.substring(firstChkAcct, lastChkAcct));
+			
+			firstChkAcct = lastChkAcct + 1;
+			lastChkAcct = accountData.indexOf(",", firstChkAcct);
+			double balance = Double.parseDouble(accountData.substring(firstChkAcct, lastChkAcct));
+			
+			firstChkAcct = lastChkAcct + 1;
+			lastChkAcct = accountData.indexOf(",", firstChkAcct);
+			double iRate = Double.parseDouble(accountData.substring(firstChkAcct, lastChkAcct));
+			
+			firstChkAcct = lastChkAcct + 1;
+			DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+			Date openDate = df.parse(accountData.substring(firstChkAcct));
+			
+			CheckingAccount checkingAccount = new CheckingAccount(accNum, balance, iRate, openDate);
+			
+			return checkingAccount;
+		}
+		catch(Exception e){
+				throw new NumberFormatException();
+		}
 	}
 
-	/* 
-	 * Checks deposit amount: 
-	 * If the deposit amount is a negative number,
-	 * no calculation is performed and returns false. 
-	 */
-	public boolean deposit(double amount) {
-
-		if(amount > 0) {
-			this.balance += amount;
-			return true;
-		} 
-		return false;
-	}
-	/*
-	 * Calculation: Future Value based on current balance and interest.
-	 */
-	public double futureValue(int years) {
-		double fv = getBalance() * Math.pow(1 + ckInt, years);
-		return fv;
-	}
 	
-	/*
-	 * DecimalFormat() 
-	 * Converts and formats double/floating/exponential notation to decimal format.
-	 * toString(): Concatenates requested data for final println in main().
-	 */
+	// Outputs account info
 	public String toString() {
-
-		DecimalFormat dfInt = new DecimalFormat("0.#####");
-		DecimalFormat dfFutVal = new DecimalFormat("0.00");
-
-		String concat1 = "Checking Account Balance: " + "$"+ getBalance() + "\n";
-		String concat2 = "Checking Account Interest Rate: " + dfInt.format(getInterestRate()) + "\n"; 
-		String concat3 = "Checking Account Balance in 3 years: " + dfFutVal.format(futureValue(3)) + "\n";
-		String concatChk = concat1 + concat2 + concat3;
-
-		return concatChk;
+		DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+		String checkAccInfo = getAccountNumber() + "," + getBalance() + "," + String.format("%.4f", getInterestRate()) + "," + df.format(getOpenedOn());
+		return checkAccInfo;
 	}
+	
+	
 }
 
-// End CheckingAccount.java
+
+
+
+
+
+
 
 
 

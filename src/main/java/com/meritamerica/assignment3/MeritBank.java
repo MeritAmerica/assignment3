@@ -1,171 +1,236 @@
 package com.meritamerica.assignment3;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
 
 public class MeritBank {
+	
+	public static long accountNumber = 1;
+	public static AccountHolder[] accountHolders = new AccountHolder[1];
+	public static CDOffering[] cdOfferings = new CDOffering[0];
+	public static CDOffering offering;
 
-	private static AccountHolder[] accountHolders = new AccountHolder[0];
-	private static CDOffering[] cdOfferings = new CDOffering[5];
-	private static long accountNumber = 100000;
-	static int best = 0;
-	static int second = 0;
 
-//<------------------------------------------------------------------->
-
-	/*
-	 * Stanford Lecture 15 JUnit: 341
-	 */
-	public static boolean readFromFile(String file) {
-
-		String goodFile = file;
+// Read DATABASE from FILE
+	public static boolean readFromFile(String fileName) {
 		
-		if (goodFile == "src/test/testMeritBank_good.txt") {
+		accountHolders = new AccountHolder[1];
+		cdOfferings = new CDOffering[0];
+		
 		try {
-			FileReader reader = new FileReader(file);
-			BufferedReader rd = new BufferedReader(reader);
-			String line;
+			BufferedReader rd = new BufferedReader(new FileReader(fileName));
+				
+				MeritBank.setNextAccountNumber(Long.parseLong(rd.readLine()));
+				
 
-			while ((line = rd.readLine()) != null) {
-				System.out.println(line);
-			}
-			reader.close();
+// Read CDOffers
+				int numOfCDOfferings = Integer.parseInt(rd.readLine());
+				int n = 0;
+				cdOfferings = new CDOffering[numOfCDOfferings];
+				
+				while (numOfCDOfferings > 0) {
+					cdOfferings[n] = CDOffering.readFromString(rd.readLine());
+					n++;
+					numOfCDOfferings--;
+				}
+				
+//Read Account Holders
+				int numOfAccountHolders = Integer.parseInt(rd.readLine());
+				
+					while (numOfAccountHolders > 0) {
+							
+						AccountHolder ac = AccountHolder.readFromString(rd.readLine());
+						addAccountHolder(ac);
+	
+//read checking accounts
+					int numOfCheckAcc = Integer.parseInt(rd.readLine());
+					while (numOfCheckAcc > 0){
+						ac.addCheckingAccount(CheckingAccount.readFromString(rd.readLine()));	
+						numOfCheckAcc--;
+					}
+					
+//read savings accounts	
+					int numOfSaveAcc = Integer.parseInt(rd.readLine());
+					while (numOfSaveAcc > 0) {
+						ac.addSavingsAccount(SavingsAccount.readFromString(rd.readLine()));
+						numOfSaveAcc--;
+					}
+//read CD accounts						
+					int numOfCDAcc = Integer.parseInt(rd.readLine());
+					while (numOfCDAcc > 0) {
+						ac.addCDAccount(CDAccount.readFromString(rd.readLine()));
+						numOfCDAcc--;
+					}
+					
+					numOfAccountHolders--;
+				} //Read Account Holders
 
-		} catch (IOException e) {
+		
+			rd.close();
+			
+			sortAccountHolders();
+			
+			System.out.println(AccountHolder.writeToString());
+						
+			return true;
+			
+		} catch (Exception e){
 			e.printStackTrace();
+			return false;
+		}//catch
+		
+		
+	}//readFromFile
+	
+	
+	
+// Write DATABASE to FILE
+	public static boolean writeToFile(String fileName) {
+		
+		String outp = getNextAccountNumber() + "\n";
+		
+		for (int i = 0; i < cdOfferings.length; i++) {
+			if (cdOfferings[i] != null) {
+				outp += cdOfferings[i].toString();
+			}
 		}
-		return true;
-		} else {
+		
+		outp += accountHolders.length + "\n";
+		for (int i = 0; i < accountHolders.length; i++) {
+			if (accountHolders[i] != null) {
+				outp += accountHolders[i].toStringForFile();
+			}
+		}
+		
+		System.out.println(outp);
+		PrintWriter out;
+		try {
+			out = new PrintWriter("BankOutput.txt");
+			out.println(outp);
+			out.close();
+			return true;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 			return false;
 		}
+		
+		
 	}
-
-//<------------------------------------------------------------------->
-
-	static void addAccountHolder(AccountHolder accountHolder) {
-		AccountHolder[] newAcctHold = new AccountHolder[MeritBank.accountHolders.length + 1];
-
-		for (int i = 0; i < MeritBank.accountHolders.length; i++)
-			newAcctHold[i] = MeritBank.accountHolders[i];
-
-		newAcctHold[newAcctHold.length - 1] = accountHolder;
-		MeritBank.accountHolders = newAcctHold;
-	}
-
-	public static AccountHolder[] getAccountHolders() {
-		if (accountHolders.length == 0)
-			return null;
-		return MeritBank.accountHolders;
-	}
-
-	public static CDOffering[] getCDOfferings() {
-
-		if (cdOfferings.length == 0) {
-			return null;
+// End Write DATABASE to FILE
+	
+	static AccountHolder[] sortAccountHolders() {
+		int l = 0;
+		while (accountHolders[l] != null) {
+			l++;			
 		}
-		return MeritBank.cdOfferings;
+		Arrays.sort(accountHolders, 0, l);
+
+		return accountHolders;
 	}
-
-	public static CDOffering getBestCDOffering(double depositAmount) {
-
-		double futVal1 = 0;
-		double futVal2 = 0;
-		double futVal3 = 0;
-
-		for (int i = 0; i < cdOfferings.length; i++) {
-
-			if (cdOfferings[i] != null) {
-				futVal1 = futureValue(depositAmount, cdOfferings[i].getInterestRate(), cdOfferings[i].getTerm());
-				if (i != (cdOfferings.length - 1)) {
-					i++;
-					futVal2 = futureValue(depositAmount, cdOfferings[i].getInterestRate(), cdOfferings[i].getTerm());
-				}
-
-				if (futVal1 > futVal2) {
-
-					if (futVal1 > futVal3) {
-						futVal3 = futVal1;
-						best = i;
-						second = i - 1;
-					}
-				} else {
-
-					if (futVal2 > futVal3) {
-						futVal3 = futVal2;
-						best = i;
-						second = i - 1;
-					}
-				}
-			}
-		}
-		return cdOfferings[best];
+	
+	static void setNextAccountNumber(long nextAccountNumber) {
+		accountNumber = nextAccountNumber;
 	}
-
-	/* Select and return second best CD offering */
-	public static CDOffering getSecondBestCDOffering(double depositAmount) {
-		if (cdOfferings.length == 0) {
-			System.out.println("Unable to purchase a CD: MeritBank is not offering CDs at this time.");
-			return null;
-		}
-		double[] offeringValues = new double[cdOfferings.length];
-		int[] index = new int[cdOfferings.length];
-
-		double carryOfferVal;
-		int carryIntRate;
-
-		for (int i = 0; i < cdOfferings.length; i++) {
-			offeringValues[i] = MeritBank.futureValue(depositAmount, cdOfferings[i].getInterestRate(),
-					cdOfferings[i].getTerm());
-			index[i] = i;
-		}
-
-		for (int i = 0; i < cdOfferings.length; i++) {
-			for (int j = i + 1; j < cdOfferings.length; j++) {
-
-				if (offeringValues[i] > offeringValues[j]) {
-
-					carryOfferVal = offeringValues[i];
-					offeringValues[i] = offeringValues[j];
-					offeringValues[j] = carryOfferVal;
-
-					carryIntRate = index[i];
-					index[i] = index[j];
-					index[j] = carryIntRate;
-				}
-			}
-		}
-		return cdOfferings[index[index.length - 2]];
-	}
-
-	public static void clearCDOfferings() {
-		MeritBank.cdOfferings = new CDOffering[0];
-	}
-
-	/*
-	 * clearCDOfferings() cleared the Array, setCDOfferings reinitializes the array
-	 */
-	public static void setCDOfferings(CDOffering[] offerings) {
-		cdOfferings = new CDOffering[5];
-		for (int i = 0; i < offerings.length; i++) {
-			cdOfferings[i] = offerings[i];
-		}
-	}
-
+	
 	public static long getNextAccountNumber() {
 		return accountNumber++;
 	}
+	
 
+	public static void addAccountHolder(AccountHolder accountHolder) {
+
+		
+		for (int i = 0; i < accountHolders.length; i++) {
+			if (accountHolders[i] == null) {
+				accountHolders[i] = accountHolder;
+				
+				//Extending Array if full
+				if(i == accountHolders.length - 1) {
+					AccountHolder[] temp = new AccountHolder[accountHolders.length * 2];
+					for (int j = 0; j < accountHolders.length; j++) {
+						temp[j] = accountHolders[j];
+					}
+					accountHolders = temp;		
+				}
+								
+				break;
+			}
+		}
+
+	}
+	
+	public static AccountHolder[] getAccountHolders() {
+		return accountHolders;
+	}
+	
+	public static CDOffering[] getCDOfferings() {
+		return cdOfferings;
+	}
+
+
+	public static CDOffering getBestCDOffering(double depositAmount) {
+		if (cdOfferings != null) {
+		double val = 0.0;
+		int j = 0;
+		for (int i = 0; i < cdOfferings.length; i++) {
+			if((double)futureValue(depositAmount, cdOfferings[i].getInterestRate(), cdOfferings[i].getTerm()) > val) {
+				val = (double)futureValue(depositAmount, cdOfferings[i].getInterestRate(), cdOfferings[i].getTerm());
+				j = i;
+				
+			}
+		
+		}
+		return cdOfferings[j];
+		}else return null;
+	}
+
+	public static CDOffering getSecondBestCDOffering(double depositAmount) {
+		if (cdOfferings != null) {
+		double val = 0.0;
+		int j = 0;
+		int k = 0;
+		for (int i = 0; i < cdOfferings.length; i++) {
+			if((double)futureValue(depositAmount, cdOfferings[i].getInterestRate(), cdOfferings[i].getTerm()) > val) {
+				val = (double)futureValue(depositAmount, cdOfferings[i].getInterestRate(), cdOfferings[i].getTerm());
+				j = i;
+				k = j;
+			}
+		
+		}
+		
+		return cdOfferings[k];
+		}else return null;
+	}
+	
+	public static void clearCDOfferings() {
+
+		cdOfferings = null;
+	}
+	
+	public static void setCDOfferings(CDOffering[] offerings) {
+		
+		cdOfferings = offerings;
+	}
+	
+	
 	public static double totalBalances() {
 		double total = 0.0;
-		for (AccountHolder holder : accountHolders) {
-			total += holder.getCombinedBalance();
+		for (int i = 0; i < accountHolders.length; i++) {
+			if (accountHolders[i] != null)
+			total += accountHolders[i].getCombinedBalance();
+			else break;
 		}
+		
 		return total;
 	}
-
+	
 	public static double futureValue(double presentValue, double interestRate, int term) {
-		return presentValue * Math.pow(1 + interestRate, term);
+		double futureValue = presentValue * Math.pow(1 + interestRate, term);
+		return futureValue;
 	}
+
 
 }
